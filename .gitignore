@@ -26,3 +26,5 @@ yarn-error.log*
 /.idea/mall.iml
 /.idea/modules.xml
 /.idea/vcs.xml
+/.idea/mall-frontend.iml
+/.idea/misc.xml
