@@ -1,6 +1,9 @@
-import {useNavigate} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
+import ModifyComponent from "../../components/todo/ModifyComponent";
 
-const ModifyPage = ({tno}) => {
+const ModifyPage = () => {
+
+  const {tno} = useParams()
 
   const navigate = useNavigate()
 
@@ -13,9 +16,13 @@ const ModifyPage = ({tno}) => {
   }
 
   return (
-    <div className="text-3xl font-extrabold">
-      Todo Modify Page
+    <div className="p-4 w-full bg-white">
+      <div className="text-3xl font-extrabold">
+        Todo Modify Page
+      </div>
+      <ModifyComponent tno={tno}/>
     </div>
+
   )
 }
 
