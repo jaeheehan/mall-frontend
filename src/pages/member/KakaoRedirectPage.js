@@ -9,7 +9,7 @@ const KakaoRedirectPage = () => {
 
   const [searchParam] = useSearchParams()
 
-  const {moveToPath} = useCustomLogin()
+  const {moveToPath, saveAsCookie} = useCustomLogin()
 
   const dispatch = useDispatch()
 
@@ -23,7 +23,8 @@ const KakaoRedirectPage = () => {
         console.log("--------------------")
         console.log(memberInfo)
 
-        dispatch(login(memberInfo))
+        //dispatch(login(memberInfo))
+        saveAsCookie(memberInfo)
 
         if(memberInfo && !memberInfo.social){
           moveToPath('/')
