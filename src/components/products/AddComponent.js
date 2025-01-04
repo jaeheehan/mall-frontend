@@ -3,6 +3,7 @@ import {postAdd} from "../../api/productsApi";
 import FetchingModal from "../common/FetchingModal";
 import ResultModal from "../common/ResultModal";
 import useCustomMove from "../../hooks/useCustomMove";
+import {useMutation, useQueryClient} from "@tanstack/react-query";
 
 const initState = {
   pname: '',
@@ -15,10 +16,6 @@ const AddComponent = () => {
 
   const [product, setProduct] = useState({...initState})
   const uploadRef = useRef()
-
-  const [fetching, setFetching] = useState(false)
-  const [result, setResult] = useState(null)
-
   const {moveToList} = useCustomMove();
 
   const handleChangeProduct = (e) => {
@@ -26,13 +23,21 @@ const AddComponent = () => {
     setProduct({...product})
   }
 
+  const addMutation = useMutation({
+    //mutationKey: ['addProduct'],
+    mutationFn: (product) => postAdd(product)
+  })
+
+  /*const [fetching, setFetching] = useState(false)
+  const [result, setResult] = useState(null)*/
+
+
   const handleClickAdd = (e) => {
-    console.log(product)
+
     const files = uploadRef.current.files
     const formData = new FormData();
 
     for ( let i=0; i< files.length; i++) {
-      console.log(i)
       formData.append("files", files[i])
     }
 
@@ -42,23 +47,29 @@ const AddComponent = () => {
 
     console.log(formData)
 
-    setFetching(true)
+    addMutation.mutate(formData)
+
+
+    /*setFetching(true)
     postAdd(formData).then(data => {
       setFetching(false)
       setResult(data.result)
-    })
+    })*/
   }
 
+  const queryClient = useQueryClient()
+
   const closeModal = () => {
-    setResult(null)
+    //setResult(null)
+    queryClient.invalidateQueries("products/lists")
     moveToList({page: 1})
   }
 
   return (
       <div className="border-2 border-sky-200 mt-10 m-2 p-4">
-        {fetching ? <FetchingModal/> : <></>}
-        {result?
-          <ResultModal title={'Product Add Result'} content={`${result}번 등록 완료`} callbackFn={closeModal}/>: <></>
+        {addMutation.isPending ? <FetchingModal/> : <></>}
+        {addMutation.isSuccess?
+          <ResultModal title={'Product Add Result'} content={`${addMutation.data.result}번 등록 완료`} callbackFn={closeModal}/>: <></>
         }
         <div className="flex justify-center">
           <div className="relative mb-4 flex w-full flex-wrap items-stretch">

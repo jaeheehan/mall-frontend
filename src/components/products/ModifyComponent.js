@@ -3,6 +3,7 @@ import { getOne, putOne, deleteOne } from "../../api/productsApi";
 import FetchingModal from "../common/FetchingModal";
 import { API_SERVER_HOST } from "../../api/todoApi";
 import useCustomMove from "../../hooks/useCustomMove";
+import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import ResultModal from "../common/ResultModal";
 
 const initState = {
@@ -18,24 +19,22 @@ const host = API_SERVER_HOST
 
 const ModifyComponent = ({pno}) => {
 
-  const [result, setResult] = useState(null)
-
-  const [product, setProduct] = useState(initState)
-
   const {moveToRead, moveToList} = useCustomMove()
-
-  const [fetching, setFetching] = useState(false)
+  const [product, setProduct] = useState(initState)
 
   const uploadRef = useRef()
 
-  useEffect(() => {
-    setFetching(true)
+  const query = useQuery({
+    queryKey: ['products', pno],
+    queryFn: ()=> getOne(pno),
+    staleTime: Infinity
+  })
 
-    getOne(pno).then(data => {
-      setProduct(data)
-      setFetching(false)
-    })
-  }, [pno]);
+  useEffect(()=> {
+    if(query.isSuccess) {
+      setProduct(query.data)
+    }
+  }, [pno, query.data, query.isSuccess])
 
   const handleChangeProduct = (e) => {
     product[e.target.name] = e.target.value
@@ -48,6 +47,10 @@ const ModifyComponent = ({pno}) => {
     product.uploadFileNames = resultFileNames;
     setProduct({...product})
   }
+
+  const modMutation = useMutation({
+    mutationFn: (product0 => putOne(pno, product))
+  })
 
   const handleClickModify = () => {
     const files = uploadRef.current.files
@@ -65,36 +68,45 @@ const ModifyComponent = ({pno}) => {
     for (let i = 0; i< product.uploadFileNames.length; i++){
       formData.append("uploadFileNames", product.uploadFileNames[i])
     }
-    putOne(pno, formData).then(data => {
-      setResult('Modified')
-      setFetching(false)
-    })
+
+    modMutation.mutate(formData)
+
   }
 
+  const delMutation = useMutation({
+    mutationFn: (pno) => deleteOne(pno)
+  })
+
+  const queryClient = useQueryClient()
+
   const handleClickDelete = () => {
-    setFetching(true)
-    deleteOne(pno).then(data => {
-      setResult("Deleted")
-      setFetching(false)
-    })
+    delMutation.mutate(pno)
   }
 
   const closeModal = () => {
-    if(result === 'Modified') {
-      moveToRead(pno)
-    }else if(result === 'Deleted'){
-      moveToList({page:1})
+    if(delMutation.isSuccess || modMutation.isSuccess){
+      queryClient.invalidateQueries(['products', pno])
+      queryClient.invalidateQueries(['products/list'])
+
+      if(delMutation.isSuccess){
+        moveToList()
+        return
+      }
+
+      if(modMutation.isSuccess){
+        moveToRead(pno)
+      }
     }
-    setResult(null)
+
   }
 
   return (
     <div className="border-2 border-sky-200 mt-10 m-2 p-4">
       Product Modify Component
-      {fetching ? <FetchingModal/> : <></>}
-      {result ?
+      {query.isFetching || delMutation.isPending || modMutation.isPending ? <FetchingModal/> : <></>}
+      {delMutation.isSuccess || modMutation.isSuccess ?
         <ResultModal
-          title={`${result}`}
+          title={'처리결과'}
           content={'정상적으로 처리되었습니다.'}
           callbackFn={closeModal}
         /> : <></>
