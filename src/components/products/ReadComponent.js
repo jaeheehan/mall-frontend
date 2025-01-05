@@ -19,50 +19,42 @@ const host = API_SERVER_HOST
 
 const ReadComponent = ({pno}) =>  {
 
-  //const [product, setProduct] = useState(initState)
+  const { moveToList, moveToModify} = useCustomMove()
 
-  const { moveToList, moveToModify} = useCustomMove();
+  const { loginState } = useCustomLogin()
 
-  const {isFetching, data} = useQuery({
-      queryKey: ['products', pno],
+  const { cartItems, changeCart } = useCustomCart()
+
+  const { isFetching, data } = useQuery({
+      queryKey: ['pruducts', pno],
       queryFn: () => getOne(pno),
-      staleTime: 1000 * 10,
+      staleTime: 1000 * 10 * 60,
       retry: 1
     }
   )
 
-  const product = data || initState;
-
-  /*const [ fetching, setFetching ] = useState(false)
-
-  const { changeCart, cartItems } = useCustomCart()
-
-  const {loginState } = useCustomLogin()*/
-
   const handleClickAddCart = () => {
-    /*
-    let qty = 1
-    const addedItem = cartItems.filter(item => item.pno === parseInt(pno))[0]
 
-    if(addedItem) {
-      if(window.confirm("이미 추가된 상품입니다. 추가하시겠습니까?") === false) {
+    let qty = 1
+
+    const addedItem = cartItems.filter(item => item.pno === parseInt(pno)[0])
+
+    console.log(addedItem)
+
+    if(addedItem?.length > 0) {
+      if(window.confirm('이미 추가된 상품입니다. 추가하시겠습니까?') === false){
         return
       }
       qty = addedItem.qty + 1
     }
 
-    changeCart({email: loginState.email, pno: pno, qty: qty})\
-    */
+    changeCart({email: loginState.email, pno: pno, qty: qty})
   }
 
 
-  /*useEffect(()=> {
-    setFetching(true)
-    getOne(pno).then(data => {
-      setProduct(data)
-      setFetching(false)
-    })
-  }, [pno])*/
+  const product = data || initState;
+
+
 
   return (
     <div className="border-2 border-sky-200 mt-10 m-2 p-4">

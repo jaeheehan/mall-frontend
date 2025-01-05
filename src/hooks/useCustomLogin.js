@@ -5,6 +5,7 @@ import {useRecoilState, useResetRecoilState} from "recoil";
 import signinState from "../atoms/signinState";
 import {loginPost} from "../api/memberApi";
 import {removeCookie, setCookie} from "../util/cookieUtil";
+import {cartState} from "../atoms/cartState";
 
 const useCustomLogin = () => {
 
@@ -14,9 +15,9 @@ const useCustomLogin = () => {
 
   const resetState = useResetRecoilState(signinState)
 
-  const isLogin = loginState.email ? true : false
+  const resetCartState = useResetRecoilState(cartState)
 
-  const dispatch = useDispatch()
+  const isLogin = loginState.email ? true : false
 
   const doLogin = async (loginParam) => {
     const result = await loginPost(loginParam) //dispatch(loginPostAsync(loginParam))
@@ -33,6 +34,7 @@ const useCustomLogin = () => {
   const doLogout = () => {
     removeCookie('member')
     resetState()
+    resetCartState()
   }
 
   const moveToPath = (path) => {

@@ -1,7 +1,4 @@
-import { useState } from "react"
-import {useDispatch} from "react-redux";
-import {login, loginPostAsync} from "../../slices/loginSlice";
-import { useNavigate } from "react-router-dom";
+import {useState} from "react"
 import useCustomLogin from "../../hooks/useCustomLogin";
 import KakaoLoginComponent from "./KakaoLoginComponent";
 
@@ -14,10 +11,6 @@ const LoginComponent = () => {
 
   const [loginParam, setLoginParam] = useState({...initState})
 
-  const dispatch = useDispatch()
-
-  const navigate = useNavigate()
-
   const {doLogin, moveToPath} = useCustomLogin()
 
   const handleChange = (e) => {
@@ -27,20 +20,6 @@ const LoginComponent = () => {
   }
 
   const handleClickLogin = (e) => {
-    //dispatch(login(loginParam)) // 동기화된 호출
-    //비동기 호출
-    /*dispatch(loginPostAsync(loginParam))
-      .unwrap()
-      .then(data => {
-        console.log("after unwrap....")
-        console.log(data)
-        if(data.error) {
-          alert('이메일과 패스워드를 다시 확인하세요')
-        }else{
-          alert('로그인 성공')
-          navigate({pathname: `/`}, {replace: true})
-        }
-      })*/
     doLogin(loginParam).then(data => {
       console.log(data)
 
